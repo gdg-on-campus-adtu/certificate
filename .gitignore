@@ -1,0 +1,9 @@
+/.direnv
+/.venv
+/certificates
+__marimo__
+__pycache__
+/assets*
+.env
+.env.*
+!.env.example
