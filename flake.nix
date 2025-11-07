@@ -15,12 +15,7 @@
         { pkgs, ... }:
         {
           devShells.default = pkgs.mkShell {
-            name = "certificate-distribution";
-            LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath [
-              pkgs.stdenv.cc.cc
-              pkgs.zlib
-              "/run/opengl-driver"
-            ];
+            name = "certificate";
             venvDir = ".venv";
             packages = [
               pkgs.nodejs-slim_24
