@@ -7,24 +7,22 @@ This notebook can be scaffolded using [Nix](https://nixos.org) and
 direnv allow
 ```
 
-Now, follow the generic instructions:
+Now, follow the generic instructions (last updated w.r.t to a distribution on
+18th May, 2026):
 
 ```fish
-# Install dependencies into the active venv.
-uv sync --active
-
-# Setup env variables.
+# Setup env variables:
 cp .env.example .env
-# Now, change it with your own credentials.
+# Now, change it with your own credentials
 
-# Setup assets
+# Setup assets:
 mkdir assets
-# Now, download the CSV from Bevy and save it as "assets/attendance.csv".
-# Put your certificate template in assets as "assets/certificate.png".
-# Lastly, the font you want to use for the name should be available as "assets/font.otf".
+# Now, save the record as "assets/record.xlsx"
+# Save the certificate template as "assets/certificate.png"
+# Save the font you want to use for the name as "assets/font.ttf"
 
 # Now, run the marimo notebook and perform the needed:
-marimo edit src/notebook.py
+uv run poe notebook
 ```
 
 ### 2. Licensing

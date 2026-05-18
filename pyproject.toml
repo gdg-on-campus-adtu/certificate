@@ -1,16 +1,29 @@
 [project]
 name = "certificate"
 version = "0.1.0"
-description = "The generic marimo notebook we use to generate and distribute our certificates."
-readme = "README.md"
-requires-python = ">=3.13"
+description = "The generic marimo notebook we use to generate and distribute our certificates"
+keywords = ["certificate"]
+requires-python = ">=3.14"
 dependencies = [
-  "dotenv>=0.9.9",
-  "marimo[recommended]>=0.17.7",
-  "pillow>=12.0.0",
-  "polars>=1.35.1",
+  "fastexcel>=0.20.2",
+  "marimo[recommended]>=0.23.6",
+  "pillow>=12.2.0",
+  "poethepoet>=0.46.0",
+  "polars[pyarrow]>=1.40.1",
   "yagmail>=0.15.293",
 ]
 
-[dependency-groups]
-dev = ["ruff>=0.14.4"]
+[build-system]
+requires = ["uv_build>=0.11.0,<0.12.0"]
+build-backend = "uv_build"
+
+[tool.basedpyright]
+venvPath = "."
+venv = ".venv"
+pythonVersion = "3.14"
+pythonPlatform = "Linux"
+executionEnvironments = [{ root = "src" }]
+
+[tool.poe.tasks.notebook]
+help = "Open the interactive marimo notebook in your browser"
+cmd = "uv run marimo edit src/certificate/__main__.py"

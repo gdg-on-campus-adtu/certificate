@@ -1,6 +1,8 @@
+# WARNING: Standard LSPs will not work with this file. Open this as a marimo notebook instead.
+
 import marimo
 
-__generated_with = "0.17.7"
+__generated_with = "0.23.6"
 app = marimo.App(width="medium")
 
 
@@ -10,11 +12,9 @@ def _():
     import re
     import yagmail
     import polars as pl
-    from dotenv import load_dotenv
     from pathlib import Path
     from PIL import Image, ImageDraw, ImageFont
 
-    load_dotenv()
     return Image, ImageDraw, ImageFont, Path, os, pl, re, yagmail
 
 
@@ -24,17 +24,7 @@ def _(pl):
     Prepare data
     """
 
-    df = (
-        pl.read_csv("assets/attendance.csv")
-        .filter(pl.col("Checkin Date (UTC)").is_not_null())
-        .select(["First Name", "Last Name", "Email"])
-        .with_columns(
-            [
-                pl.col("First Name").str.to_titlecase().alias("First Name"),
-                pl.col("Last Name").str.to_titlecase().alias("Last Name"),
-            ]
-        )
-    )
+    df = pl.read_excel("assets/record.xlsx").select(["Full Name", "Email Address"])
     df
     return (df,)
 
@@ -51,11 +41,15 @@ def _(Image, ImageDraw, ImageFont, Path, df, re):
     certificate_dir.mkdir(exist_ok=True)
     template_path = "assets/certificate.png"
 
-    font_path = "assets/font.otf"
-    font = ImageFont.truetype(font_path, 80)
+    font_path = "assets/font.ttf"
+    font = ImageFont.truetype(font_path, 62)
 
     for idx, row in enumerate(df.iter_rows(named=True)):
-        full_name = f"{row['First Name']} {row['Last Name']}"
+        full_name = row["Full Name"].strip()
+        certificate_path = (
+            certificate_dir
+            / f"{re.sub(r'[^\w\s-]', '', full_name).replace(' ', '_')}.png"
+        )
 
         if not dry_run_certificate:
             template = Image.open(template_path)
@@ -65,17 +59,10 @@ def _(Image, ImageDraw, ImageFont, Path, df, re):
             text_width = bbox[2] - bbox[0]
 
             template_width, template_height = template.size
-            x_position = (template_width - text_width) // 2
-            y_position = template_height // 2 - 10
+            x_position = int(template_width * 0.06)
+            y_position = int(template_height * 0.36)
 
-            draw.text((x_position, y_position), full_name, fill="black", font=font)
-
-        certificate_path = (
-            certificate_dir
-            / f"{re.sub(r'[^\w\s-]', '', full_name).replace(' ', '_')}.png"
-        )
-
-        if not dry_run_certificate:
+            draw.text((x_position, y_position), full_name, fill="#1A2533", font=font)
             template.save(certificate_path)
 
         print(f"{idx + 1}. Written {certificate_path}")
@@ -93,24 +80,24 @@ def _(certificate_dir, df, os, re, yagmail):
     yag = yagmail.SMTP(os.getenv("SENDER_EMAIL"), os.getenv("SENDER_APP_PASSWORD"))
 
     for idx_two, row_two in enumerate(df.iter_rows(named=True)):
-        full_name_two = f"{row_two['First Name']} {row_two['Last Name']}"
-        email = row_two["Email"].strip()
+        full_name_two = row_two["Full Name"].strip()
+        email = row_two["Email Address"].strip()
         certificate_path_two = (
             certificate_dir
             / f"{re.sub(r'[^\w\s-]', '', full_name_two).replace(' ', '_')}.png"
         )
-        contents = "<message>"
+        contents = f"""Hello {full_name_two}! Here is your <message>"""
 
         if not dry_run_email:
             yag.send(
                 to=email,
-                subject="<subject>",
+                subject="A nice ol' <subject>",
                 contents=contents,
                 attachments=str(certificate_path_two),
             )
 
         print(
-            f"{idx_two + 1}. Sent {certificate_path_two} to {email}. Good job {row_two['First Name']}!"
+            f"{idx_two + 1}. Sent {certificate_path_two} to {email}. Good job {full_name_two}!"
         )
     return
 
